@@ -38,28 +38,32 @@ export function TodaySummarySection() {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Revenue Today"
+          title="Revenue (Today)"
           value={formatMoney(data.revenueToday)}
           change={{
             value: `${changePercent >= 0 ? '+' : ''}${formatNumber(changePercent, 1)}%`,
             positive: changePercent >= 0,
           }}
           subtitle="vs last week same day"
+          tooltipContent={`Revenue (Today)\n\nTotal value of invoices finalized today (local time).\n\nNot affected by whether they are already paid.`}
         />
         <KPICard
-          title="Cash Collected"
+          title="Cash Collected (Today)"
           value={formatMoney(data.cashCollectedToday)}
           subtitle="Today"
+          tooltipContent={`Cash Collected (Today)\n\nPayments received today across all methods (e.g., card, cash, Provet Pay).\n\nMay include payments for invoices issued on earlier days.`}
         />
         <KPICard
-          title="Accounts Receivable"
+          title="AR (Now)"
           value={formatMoney(data.accountsReceivableNow)}
           subtitle="Current balance"
+          tooltipContent={`AR (Now)\n\nOutstanding balance on finalized invoices right now.\n\nIncludes partial balances; excludes amounts already covered by credit notes and applied prepayments.`}
         />
         <KPICard
-          title="DSO"
+          title="DSO (30D)"
           value={formatNumber(data.dsoRolling30, 1)}
           subtitle="Rolling 30 days"
+          tooltipContent={`DSO (30D)\n\nEstimated days to collect based on the last 30 days of credit sales and receipts.\n\nApproximation: (Average AR over 30D / Net credit sales 30D) × 30.\n\nLower is better.`}
         />
       </div>
 
