@@ -5,9 +5,22 @@ const mockTodaySummary: TodaySummary = {
   asOf: new Date().toISOString(),
   revenueToday: { amount: 12450, currency: 'EUR' },
   revenueLastWeekSameDay: { amount: 10200, currency: 'EUR' },
+  revenueThisWeek: { amount: 58300, currency: 'EUR' },
+  revenueLastWeek: { amount: 52100, currency: 'EUR' },
+  revenueTarget: { amount: 65000, currency: 'EUR' },
   cashCollectedToday: { amount: 8300, currency: 'EUR' },
+  cashBreakdown: {
+    card: { amount: 4200, currency: 'EUR' },
+    cash: { amount: 1500, currency: 'EUR' },
+    provetPay: { amount: 2300, currency: 'EUR' },
+    other: { amount: 300, currency: 'EUR' },
+  },
   accountsReceivableNow: { amount: 45600, currency: 'EUR' },
   dsoRolling30: 32.4,
+  dsoSparkline: Array.from({ length: 30 }, (_, i) => ({
+    ts: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
+    value: 30 + Math.sin(i / 5) * 8 + Math.random() * 4,
+  })),
   revenueSparkline: Array.from({ length: 24 }, (_, i) => ({
     ts: new Date(new Date().setHours(i, 0, 0, 0)).toISOString(),
     value: Math.floor(Math.random() * 1000) + 200,

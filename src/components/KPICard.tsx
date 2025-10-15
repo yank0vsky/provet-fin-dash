@@ -15,7 +15,7 @@ interface KPICardProps {
     value: string;
     positive: boolean;
   };
-  subtitle?: string;
+  subtitle?: string | React.ReactNode;
   tooltipContent?: string;
   className?: string;
 }
@@ -56,7 +56,9 @@ export function KPICard({ title, value, change, subtitle, tooltipContent, classN
           )}
         </div>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <div className="text-xs text-muted-foreground">
+            {typeof subtitle === 'string' ? subtitle : subtitle}
+          </div>
         )}
       </div>
     </Card>

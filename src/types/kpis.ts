@@ -5,13 +5,25 @@ export interface Money {
   currency: Currency;
 }
 
+export interface CashBreakdown {
+  card: Money;
+  cash: Money;
+  provetPay: Money;
+  other: Money;
+}
+
 export interface TodaySummary {
   asOf: string;
   revenueToday: Money;
   revenueLastWeekSameDay: Money;
+  revenueThisWeek: Money;
+  revenueLastWeek: Money;
+  revenueTarget: Money;
   cashCollectedToday: Money;
+  cashBreakdown: CashBreakdown;
   accountsReceivableNow: Money;
   dsoRolling30: number;
+  dsoSparkline: Array<{ ts: string; value: number }>;
   revenueSparkline: Array<{ ts: string; value: number }>;
 }
 
