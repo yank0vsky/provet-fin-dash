@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TodaySummary } from "@/types/kpis";
 import { KPICard } from "./KPICard";
 import { ARCard } from "./ARCard";
+import { RevenueCard } from "./RevenueCard";
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatMoney, formatNumber } from "@/lib/formatters";
@@ -9,7 +10,6 @@ import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { MessageSquare, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PaymentMethodBreakdown } from "./PaymentMethodBreakdown";
 import { DSOTrendDialog } from "./DSOTrendDialog";
@@ -32,8 +32,8 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
 
   if (isLoading || !data) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(3)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
           <Card key={i} className="p-6 animate-pulse">
             <div className="h-20 bg-muted rounded" />
           </Card>
@@ -42,9 +42,7 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
     );
   }
 
-  const changeTodayPercent = ((data.revenueToday.amount - data.revenueLastWeekSameDay.amount) / data.revenueLastWeekSameDay.amount) * 100;
-  const changeWeekPercent = ((data.revenueThisWeek.amount - data.revenueLastWeek.amount) / data.revenueLastWeek.amount) * 100;
-  
+
   const chartData = data.revenueSparkline.map(point => ({
     time: format(toZonedTime(new Date(point.ts), 'Europe/Lisbon'), 'HH:mm'),
     value: point.value,
@@ -52,112 +50,49 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="week">This Week</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="today" className="space-y-4 mt-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <RevenueCard 
+          revenueToday={data.revenueToday}
+          revenueLastWeekSameDay={data.revenueLastWeekSameDay}
+          revenueThisWeek={data.revenueThisWeek}
+          revenueLastWeek={data.revenueLastWeek}
+        />
+        <PaymentMethodBreakdown breakdown={data.cashBreakdown}>
+          <div className="cursor-pointer">
             <KPICard
-              title="Revenue (Today)"
-              value={formatMoney(data.revenueToday)}
-              change={{
-                value: `${changeTodayPercent >= 0 ? '+' : ''}${formatNumber(changeTodayPercent, 1)}%`,
-                positive: changeTodayPercent >= 0,
-              }}
-              subtitle="vs last week same day"
-              tooltipContent={`Revenue (Today)\n\nTotal value of invoices finalized today (local time).\n\nNot affected by whether they are already paid.`}
+              title="Cash Collected (Today)"
+              value={formatMoney(data.cashCollectedToday)}
+              subtitle={
+                <div className="flex items-center gap-1.5">
+                  <span>Click to view breakdown</span>
+                  <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-success" />
+                    Provet Pay
+                  </Badge>
+                </div>
+              }
+              tooltipContent={`Cash Collected (Today)\n\nPayments received today across all methods (card, cash, Provet Pay).\n\nProvet Pay amounts are instantly reconciled.`}
             />
-            <PaymentMethodBreakdown breakdown={data.cashBreakdown}>
-              <div className="cursor-pointer">
-                <KPICard
-                  title="Cash Collected (Today)"
-                  value={formatMoney(data.cashCollectedToday)}
-                  subtitle={
-                    <div className="flex items-center gap-1.5">
-                      <span>Click to view breakdown</span>
-                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-success" />
-                        Provet Pay
-                      </Badge>
-                    </div>
-                  }
-                  tooltipContent={`Cash Collected (Today)\n\nPayments received today across all methods (card, cash, Provet Pay).\n\nProvet Pay amounts are instantly reconciled.`}
-                />
-              </div>
-            </PaymentMethodBreakdown>
-            <ARCard 
-              arNow={data.accountsReceivableNow}
-              arTarget={data.accountsReceivableTarget}
-            />
-            <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
-              <KPICard
-                title="DSO (30D)"
-                value={formatNumber(data.dsoRolling30, 1)}
-                subtitle={
-                  <div className="flex items-center gap-1.5 text-primary">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>Click to view trend</span>
-                  </div>
-                }
-                tooltipContent={`DSO (30D)\n\nEstimated days to collect based on the last 30 days of credit sales and receipts.\n\nApproximation: (Average AR over 30D / Net credit sales 30D) × 30.\n\nLower is better.`}
-              />
-            </div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="week" className="space-y-4 mt-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <KPICard
-              title="Revenue (This Week)"
-              value={formatMoney(data.revenueThisWeek)}
-              change={{
-                value: `${changeWeekPercent >= 0 ? '+' : ''}${formatNumber(changeWeekPercent, 1)}%`,
-                positive: changeWeekPercent >= 0,
-              }}
-              subtitle="vs last week"
-              tooltipContent={`Revenue (This Week)\n\nTotal value of invoices finalized this week (Monday to Sunday).`}
-            />
-            <PaymentMethodBreakdown breakdown={data.cashBreakdown}>
-              <div className="cursor-pointer">
-                <KPICard
-                  title="Cash Collected (Today)"
-                  value={formatMoney(data.cashCollectedToday)}
-                  subtitle={
-                    <div className="flex items-center gap-1.5">
-                      <span>Click to view breakdown</span>
-                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-success" />
-                        Provet Pay
-                      </Badge>
-                    </div>
-                  }
-                  tooltipContent={`Cash Collected (Today)\n\nPayments received today across all methods.`}
-                />
+        </PaymentMethodBreakdown>
+        <ARCard 
+          arNow={data.accountsReceivableNow}
+          arTarget={data.accountsReceivableTarget}
+        />
+        <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
+          <KPICard
+            title="DSO (30D)"
+            value={formatNumber(data.dsoRolling30, 1)}
+            subtitle={
+              <div className="flex items-center gap-1.5 text-primary">
+                <TrendingUp className="h-3 w-3" />
+                <span>Click to view trend</span>
               </div>
-            </PaymentMethodBreakdown>
-            <ARCard 
-              arNow={data.accountsReceivableNow}
-              arTarget={data.accountsReceivableTarget}
-            />
-            <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
-              <KPICard
-                title="DSO (30D)"
-                value={formatNumber(data.dsoRolling30, 1)}
-                subtitle={
-                  <div className="flex items-center gap-1.5 text-primary">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>Click to view trend</span>
-                  </div>
-                }
-                tooltipContent={`DSO (30D)\n\nEstimated days to collect based on the last 30 days.`}
-              />
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+            }
+            tooltipContent={`DSO (30D)\n\nEstimated days to collect based on the last 30 days of credit sales and receipts.\n\nApproximation: (Average AR over 30D / Net credit sales 30D) × 30.\n\nLower is better.`}
+          />
+        </div>
+      </div>
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
