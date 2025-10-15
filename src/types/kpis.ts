@@ -18,10 +18,10 @@ export interface TodaySummary {
   revenueLastWeekSameDay: Money;
   revenueThisWeek: Money;
   revenueLastWeek: Money;
-  revenueTarget: Money;
   cashCollectedToday: Money;
   cashBreakdown: CashBreakdown;
   accountsReceivableNow: Money;
+  accountsReceivableTarget: Money;
   dsoRolling30: number;
   dsoSparkline: Array<{ ts: string; value: number }>;
   revenueSparkline: Array<{ ts: string; value: number }>;

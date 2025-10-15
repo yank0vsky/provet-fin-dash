@@ -43,8 +43,8 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
 
   const changeTodayPercent = ((data.revenueToday.amount - data.revenueLastWeekSameDay.amount) / data.revenueLastWeekSameDay.amount) * 100;
   const changeWeekPercent = ((data.revenueThisWeek.amount - data.revenueLastWeek.amount) / data.revenueLastWeek.amount) * 100;
-  const targetGap = data.revenueThisWeek.amount - data.revenueTarget.amount;
-  const targetGapPercent = (targetGap / data.revenueTarget.amount) * 100;
+  const arGap = data.accountsReceivableNow.amount - data.accountsReceivableTarget.amount;
+  const arGapPercent = (arGap / data.accountsReceivableTarget.amount) * 100;
   
   const chartData = data.revenueSparkline.map(point => ({
     time: format(toZonedTime(new Date(point.ts), 'Europe/Lisbon'), 'HH:mm'),
@@ -95,6 +95,16 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
               subtitle="Current balance"
               tooltipContent={`AR (Now)\n\nOutstanding balance on finalized invoices right now.\n\nIncludes partial balances; excludes amounts already covered by credit notes and applied prepayments.`}
             />
+            <KPICard
+              title="AR Target Gap"
+              value={`${arGap >= 0 ? '+' : ''}${formatMoney({ amount: Math.abs(arGap), currency: data.accountsReceivableTarget.currency })}`}
+              change={{
+                value: `${formatNumber(Math.abs(arGapPercent), 1)}% ${arGap >= 0 ? 'above' : 'below'}`,
+                positive: arGap <= 0,
+              }}
+              subtitle={`Target: ${formatMoney(data.accountsReceivableTarget)}`}
+              tooltipContent={`AR Target Gap\n\nDifference between current AR and target AR.\n\nNegative (below target) is better.`}
+            />
             <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
               <KPICard
                 title="DSO (30D)"
@@ -123,21 +133,39 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
               subtitle="vs last week"
               tooltipContent={`Revenue (This Week)\n\nTotal value of invoices finalized this week (Monday to Sunday).`}
             />
-            <KPICard
-              title="Target Gap"
-              value={`${targetGap >= 0 ? '+' : ''}${formatMoney({ amount: Math.abs(targetGap), currency: data.revenueTarget.currency })}`}
-              change={{
-                value: `${formatNumber(Math.abs(targetGapPercent), 1)}% ${targetGap >= 0 ? 'above' : 'below'}`,
-                positive: targetGap >= 0,
-              }}
-              subtitle={`Target: ${formatMoney(data.revenueTarget)}`}
-              tooltipContent={`Target Gap\n\nDifference between this week's revenue and the weekly target.\n\nPositive means you exceeded the target.`}
-            />
+            <PaymentMethodBreakdown breakdown={data.cashBreakdown}>
+              <div className="cursor-pointer">
+                <KPICard
+                  title="Cash Collected (Today)"
+                  value={formatMoney(data.cashCollectedToday)}
+                  subtitle={
+                    <div className="flex items-center gap-1.5">
+                      <span>Click to view breakdown</span>
+                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-success" />
+                        Provet Pay
+                      </Badge>
+                    </div>
+                  }
+                  tooltipContent={`Cash Collected (Today)\n\nPayments received today across all methods.`}
+                />
+              </div>
+            </PaymentMethodBreakdown>
             <KPICard
               title="AR (Now)"
               value={formatMoney(data.accountsReceivableNow)}
               subtitle="Current balance"
               tooltipContent={`AR (Now)\n\nOutstanding balance on finalized invoices right now.`}
+            />
+            <KPICard
+              title="AR Target Gap"
+              value={`${arGap >= 0 ? '+' : ''}${formatMoney({ amount: Math.abs(arGap), currency: data.accountsReceivableTarget.currency })}`}
+              change={{
+                value: `${formatNumber(Math.abs(arGapPercent), 1)}% ${arGap >= 0 ? 'above' : 'below'}`,
+                positive: arGap <= 0,
+              }}
+              subtitle={`Target: ${formatMoney(data.accountsReceivableTarget)}`}
+              tooltipContent={`AR Target Gap\n\nDifference between current AR and target AR.\n\nNegative (below target) is better.`}
             />
             <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
               <KPICard
