@@ -37,7 +37,7 @@ export function RevenueCard({
       <div className="flex flex-col space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-muted-foreground">Revenue {isToday ? "(Today)" : "(This Week)"}</p>
+            <p className="text-sm font-medium text-muted-foreground">Revenue {isToday ? "(Today)" : "(Week)"}</p>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
