@@ -6,8 +6,14 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { formatMoney, formatNumber } from "@/lib/formatters";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export function TodaySummarySection() {
+interface TodaySummarySectionProps {
+  onChatClick?: () => void;
+}
+
+export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
   const { data, isLoading } = useQuery<TodaySummary>({
     queryKey: ['today-summary'],
     queryFn: async () => {
@@ -68,7 +74,20 @@ export function TodaySummarySection() {
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Today's Revenue Trend</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Today's Revenue Trend</h3>
+          {onChatClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onChatClick}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Button>
+          )}
+        </div>
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>

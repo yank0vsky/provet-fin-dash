@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatMoney, formatNumber, formatPercent } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { MessageSquare } from "lucide-react";
 
 const statusColors = {
   CREATED: 'hsl(var(--secondary))',
@@ -16,7 +17,11 @@ const statusColors = {
   PAID: 'hsl(var(--success))',
 };
 
-export function ClaimsPipelineSection() {
+interface ClaimsPipelineSectionProps {
+  onChatClick?: () => void;
+}
+
+export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProps) {
   const navigate = useNavigate();
   
   const { data, isLoading } = useQuery<ClaimsSummary>({
@@ -45,9 +50,22 @@ export function ClaimsPipelineSection() {
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Reimbursement Pipeline</h3>
-        <Button onClick={() => navigate('/claims')}>
-          Open Full Tracker
-        </Button>
+        <div className="flex items-center gap-2">
+          {onChatClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onChatClick}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Button>
+          )}
+          <Button onClick={() => navigate('/claims')}>
+            Open Full Tracker
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 mb-4 md:grid-cols-3">
