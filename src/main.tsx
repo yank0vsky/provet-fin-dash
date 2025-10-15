@@ -10,23 +10,36 @@ const renderApp = () =>
     </StrictMode>
   );
 
+// MSW service worker URL for production (GitHub Pages)
+const getServiceWorkerURL = () => {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  // For GitHub Pages, the service worker needs to be at the root of the domain
+  // But since we're on a project page, we need it at the project path
+  return `${baseUrl}mockServiceWorker.js`;
+};
+
 async function enableMocking() {
   const { worker } = await import("./mocks/browser");
   return worker.start({
     onUnhandledRequest: "bypass",
     serviceWorker: {
-      url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
+      url: getServiceWorkerURL(),
     },
   });
 }
 
-// Only enable MSW in development mode and when not in production build
-if (import.meta.env.DEV && import.meta.env.MODE !== "production") {
+// Enable MSW in all environments but handle failures gracefully
+if (import.meta.env.DEV || import.meta.env.PROD) {
   enableMocking()
-    .catch((error) => {
-      console.warn("Failed to start MSW, rendering app without mocks.", error);
+    .then(() => {
+      console.log("MSW started successfully");
     })
-    .finally(renderApp);
+    .catch((error) => {
+      console.warn("Failed to start MSW, API calls may fail:", error);
+    })
+    .finally(() => {
+      renderApp();
+    });
 } else {
   renderApp();
 }
