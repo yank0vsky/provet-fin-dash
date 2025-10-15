@@ -20,7 +20,8 @@ async function enableMocking() {
   });
 }
 
-if (import.meta.env.DEV) {
+// Only enable MSW in development mode and when not in production build
+if (import.meta.env.DEV && import.meta.env.MODE !== "production") {
   enableMocking()
     .catch((error) => {
       console.warn("Failed to start MSW, rendering app without mocks.", error);

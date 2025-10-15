@@ -15,7 +15,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/provet-fin-dash">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/claims" element={<Claims />} />
