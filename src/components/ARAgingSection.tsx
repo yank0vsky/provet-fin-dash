@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatMoney, formatCompactMoney } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare } from "lucide-react";
+import { useMemo } from "react";
 
 interface ARAgingSectionProps {
   onClientClick: (clientId: string) => void;
@@ -29,10 +30,13 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
     );
   }
 
-  const chartData = data.buckets.map(bucket => ({
-    bucket: bucket.label,
-    amount: bucket.amount.amount,
-  }));
+  const chartData = useMemo(() => 
+    data.buckets.map(bucket => ({
+      bucket: bucket.label,
+      amount: bucket.amount.amount,
+    })),
+    [data.buckets]
+  );
 
   return (
     <Card className="p-6">
@@ -54,7 +58,7 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
         <div className="lg:col-span-2">
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
+              <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis 
                   dataKey="bucket" 
@@ -65,6 +69,7 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
                   tick={{ fontSize: 12 }}
                   className="text-muted-foreground"
                   tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
+                  width={40}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -73,11 +78,13 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
                     borderRadius: '8px',
                   }}
                   formatter={(value: number) => [`€${value.toLocaleString()}`, 'Amount']}
+                  isAnimationActive={false}
                 />
                 <Bar 
                   dataKey="amount" 
                   fill="hsl(var(--warning))"
                   radius={[4, 4, 0, 0]}
+                  isAnimationActive={false}
                 />
               </BarChart>
             </ResponsiveContainer>

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentMethodBreakdown } from "./PaymentMethodBreakdown";
 import { DSOTrendDialog } from "./DSOTrendDialog";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface TodaySummarySectionProps {
   onChatClick?: () => void;
@@ -43,10 +43,13 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
   }
 
 
-  const chartData = data.revenueSparkline.map(point => ({
-    time: format(toZonedTime(new Date(point.ts), 'Europe/Lisbon'), 'HH:mm'),
-    value: point.value,
-  }));
+  const chartData = useMemo(() => 
+    data.revenueSparkline.map(point => ({
+      time: format(toZonedTime(new Date(point.ts), 'Europe/Lisbon'), 'HH:mm'),
+      value: point.value,
+    })),
+    [data.revenueSparkline]
+  );
 
   return (
     <div className="space-y-4">
@@ -111,7 +114,7 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
         </div>
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -123,10 +126,12 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
                 dataKey="time" 
                 tick={{ fontSize: 12 }}
                 className="text-muted-foreground"
+                interval="preserveStartEnd"
               />
               <YAxis 
                 tick={{ fontSize: 12 }}
                 className="text-muted-foreground"
+                width={40}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -135,13 +140,15 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
                   borderRadius: '8px',
                 }}
                 formatter={(value: number) => [`€${formatNumber(value)}`, 'Revenue']}
+                isAnimationActive={false}
               />
               <Area 
                 type="monotone" 
                 dataKey="value" 
                 stroke="hsl(var(--primary))" 
                 strokeWidth={2}
-                fill="url(#colorRevenue)" 
+                fill="url(#colorRevenue)"
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>

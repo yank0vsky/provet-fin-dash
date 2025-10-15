@@ -7,6 +7,7 @@ import { formatMoney, formatNumber, formatPercent } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare } from "lucide-react";
+import { useMemo } from "react";
 
 const statusColors = {
   CREATED: 'hsl(var(--secondary))',
@@ -40,11 +41,14 @@ export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProp
     );
   }
 
-  const chartData = data.pipeline.map(item => ({
-    status: item.status,
-    count: item.count,
-    amount: item.total.amount,
-  }));
+  const chartData = useMemo(() => 
+    data.pipeline.map(item => ({
+      status: item.status,
+      count: item.count,
+      amount: item.total.amount,
+    })),
+    [data.pipeline]
+  );
 
   return (
     <Card className="p-6">
@@ -85,7 +89,7 @@ export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProp
 
       <div className="h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
+          <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis 
               dataKey="status" 
@@ -95,6 +99,7 @@ export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProp
             <YAxis 
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
+              width={40}
             />
             <Tooltip 
               contentStyle={{ 
@@ -106,8 +111,9 @@ export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProp
                 if (name === 'count') return [value, 'Claims'];
                 return [`€${value.toLocaleString()}`, 'Amount'];
               }}
+              isAnimationActive={false}
             />
-            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive={false}>
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={statusColors[entry.status as keyof typeof statusColors]} />
               ))}
