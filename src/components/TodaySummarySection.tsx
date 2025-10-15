@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { TodaySummary } from "@/types/kpis";
 import { KPICard } from "./KPICard";
+import { ARCard } from "./ARCard";
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatMoney, formatNumber } from "@/lib/formatters";
@@ -31,8 +32,8 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
 
   if (isLoading || !data) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
           <Card key={i} className="p-6 animate-pulse">
             <div className="h-20 bg-muted rounded" />
           </Card>
@@ -43,8 +44,6 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
 
   const changeTodayPercent = ((data.revenueToday.amount - data.revenueLastWeekSameDay.amount) / data.revenueLastWeekSameDay.amount) * 100;
   const changeWeekPercent = ((data.revenueThisWeek.amount - data.revenueLastWeek.amount) / data.revenueLastWeek.amount) * 100;
-  const arGap = data.accountsReceivableNow.amount - data.accountsReceivableTarget.amount;
-  const arGapPercent = (arGap / data.accountsReceivableTarget.amount) * 100;
   
   const chartData = data.revenueSparkline.map(point => ({
     time: format(toZonedTime(new Date(point.ts), 'Europe/Lisbon'), 'HH:mm'),
@@ -89,21 +88,9 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
                 />
               </div>
             </PaymentMethodBreakdown>
-            <KPICard
-              title="AR (Now)"
-              value={formatMoney(data.accountsReceivableNow)}
-              subtitle="Current balance"
-              tooltipContent={`AR (Now)\n\nOutstanding balance on finalized invoices right now.\n\nIncludes partial balances; excludes amounts already covered by credit notes and applied prepayments.`}
-            />
-            <KPICard
-              title="AR Target Gap"
-              value={`${arGap >= 0 ? '+' : ''}${formatMoney({ amount: Math.abs(arGap), currency: data.accountsReceivableTarget.currency })}`}
-              change={{
-                value: `${formatNumber(Math.abs(arGapPercent), 1)}% ${arGap >= 0 ? 'above' : 'below'}`,
-                positive: arGap <= 0,
-              }}
-              subtitle={`Target: ${formatMoney(data.accountsReceivableTarget)}`}
-              tooltipContent={`AR Target Gap\n\nDifference between current AR and target AR.\n\nNegative (below target) is better.`}
+            <ARCard 
+              arNow={data.accountsReceivableNow}
+              arTarget={data.accountsReceivableTarget}
             />
             <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
               <KPICard
@@ -151,21 +138,9 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
                 />
               </div>
             </PaymentMethodBreakdown>
-            <KPICard
-              title="AR (Now)"
-              value={formatMoney(data.accountsReceivableNow)}
-              subtitle="Current balance"
-              tooltipContent={`AR (Now)\n\nOutstanding balance on finalized invoices right now.`}
-            />
-            <KPICard
-              title="AR Target Gap"
-              value={`${arGap >= 0 ? '+' : ''}${formatMoney({ amount: Math.abs(arGap), currency: data.accountsReceivableTarget.currency })}`}
-              change={{
-                value: `${formatNumber(Math.abs(arGapPercent), 1)}% ${arGap >= 0 ? 'above' : 'below'}`,
-                positive: arGap <= 0,
-              }}
-              subtitle={`Target: ${formatMoney(data.accountsReceivableTarget)}`}
-              tooltipContent={`AR Target Gap\n\nDifference between current AR and target AR.\n\nNegative (below target) is better.`}
+            <ARCard 
+              arNow={data.accountsReceivableNow}
+              arTarget={data.accountsReceivableTarget}
             />
             <div className="cursor-pointer" onClick={() => setDsoDialogOpen(true)}>
               <KPICard
