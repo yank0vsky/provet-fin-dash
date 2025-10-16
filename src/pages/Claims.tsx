@@ -24,13 +24,21 @@ import {
 import { formatMoney, formatNumber, formatPercent } from "@/lib/formatters";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
-import { Search, ExternalLink } from "lucide-react";
+import { Search, ExternalLink, Clock, Send, Eye, Bell, Download, AlertCircle, CheckCircle, FileText } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Claims() {
   const [insurer, setInsurer] = useState("all");
   const [location, setLocation] = useState("all");
   const [status, setStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<ClaimsSummary>({
     queryKey: ['claims-summary', insurer, location, status],
@@ -40,7 +48,14 @@ export default function Claims() {
       if (location !== 'all') params.append('location', location);
       if (status !== 'all') params.append('status', status);
       const res = await fetch(`/api/claims-summary?${params}`);
-      return res.json();
+      const result = await res.json();
+
+      // Update timestamp when data is loaded
+      if (result.asOf) {
+        handleTimestampUpdate(result.asOf);
+      }
+
+      return result;
     },
   });
 
@@ -49,6 +64,92 @@ export default function Claims() {
     claim.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     claim.patientName.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  const handleTimestampUpdate = (timestamp: string) => {
+    setLastUpdated(timestamp);
+  };
+
+  const formatLastUpdated = (timestamp: string | null) => {
+    if (!timestamp) return null;
+    try {
+      return format(toZonedTime(new Date(timestamp), 'Europe/Lisbon'), 'MMM d, yyyy HH:mm');
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const getClaimAction = (status: ClaimStatus) => {
+    switch (status) {
+      case 'CREATED':
+        return {
+          label: 'Review & Send',
+          icon: Send,
+          variant: 'default' as const,
+          action: () => toast.success(`Claim marked as sent to insurer`)
+        };
+      case 'SENT':
+        return {
+          label: 'Track Status',
+          icon: Eye,
+          variant: 'outline' as const,
+          action: () => toast.info(`Checking delivery status...`)
+        };
+      case 'WAITING':
+        return {
+          label: 'Nudge Insurer',
+          icon: Bell,
+          variant: 'outline' as const,
+          action: () => toast.success(`Follow-up sent to insurer`)
+        };
+      case 'READY':
+        return {
+          label: 'Download Payment',
+          icon: Download,
+          variant: 'default' as const,
+          action: () => toast.success(`Payment details downloaded`)
+        };
+      case 'REJECTED':
+        return {
+          label: 'Review & Resubmit',
+          icon: AlertCircle,
+          variant: 'destructive' as const,
+          action: () => toast.info(`Opening claim for review and resubmission`)
+        };
+      case 'PAID':
+        return {
+          label: 'View Details',
+          icon: CheckCircle,
+          variant: 'outline' as const,
+          action: () => toast.info(`Opening payment confirmation`)
+        };
+      default:
+        return {
+          label: 'View',
+          icon: ExternalLink,
+          variant: 'ghost' as const,
+          action: () => toast.info(`Opening claim details`)
+        };
+    }
+  };
+
+  const getClaimTooltip = (status: ClaimStatus) => {
+    switch (status) {
+      case 'CREATED':
+        return 'Review claim details and submit to insurance company';
+      case 'SENT':
+        return 'Check if the claim was received and acknowledged';
+      case 'WAITING':
+        return 'Send a follow-up reminder to the insurer';
+      case 'READY':
+        return 'Download payment voucher or remittance advice';
+      case 'REJECTED':
+        return 'Review rejection reason and resubmit corrected claim';
+      case 'PAID':
+        return 'View payment confirmation and receipt details';
+      default:
+        return 'View detailed claim information';
+    }
+  };
 
   const insurers = ['all', 'AdSaúde', 'Multicare', 'Médis', 'AdvanceCare', 'Medicare'];
   const locations = ['all', 'Lisbon', 'Porto', 'Braga', 'Coimbra', 'Faro'];
@@ -60,6 +161,12 @@ export default function Claims() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reimbursement Tracker</h1>
           <p className="text-muted-foreground">Monitor and manage insurance claims</p>
+          {lastUpdated && (
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Last updated: {formatLastUpdated(lastUpdated)}</span>
+            </div>
+          )}
         </div>
 
         {data && (
@@ -159,29 +266,51 @@ export default function Claims() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredClaims.map((claim) => (
-                        <TableRow key={claim.id}>
-                          <TableCell className="font-medium">{claim.id}</TableCell>
-                          <TableCell>{claim.patientName}</TableCell>
-                          <TableCell>{claim.insurer}</TableCell>
-                          <TableCell>{claim.location}</TableCell>
-                          <TableCell>
-                            <StatusBadge status={claim.status} />
-                          </TableCell>
-                          <TableCell>{formatMoney(claim.amount)}</TableCell>
-                          <TableCell>
-                            {format(toZonedTime(new Date(claim.createdAt), 'Europe/Lisbon'), 'MMM d, yyyy')}
-                          </TableCell>
-                          <TableCell>
-                            {format(toZonedTime(new Date(claim.updatedAt), 'Europe/Lisbon'), 'MMM d, yyyy')}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button size="sm" variant="ghost">
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      filteredClaims.map((claim) => {
+                        const claimAction = getClaimAction(claim.status);
+                        const ActionIcon = claimAction.icon;
+
+                        return (
+                          <TableRow key={claim.id}>
+                            <TableCell className="font-medium">{claim.id}</TableCell>
+                            <TableCell>{claim.patientName}</TableCell>
+                            <TableCell>{claim.insurer}</TableCell>
+                            <TableCell>{claim.location}</TableCell>
+                            <TableCell>
+                              <StatusBadge status={claim.status} />
+                            </TableCell>
+                            <TableCell>{formatMoney(claim.amount)}</TableCell>
+                            <TableCell>
+                              {format(toZonedTime(new Date(claim.createdAt), 'Europe/Lisbon'), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              {format(toZonedTime(new Date(claim.updatedAt), 'Europe/Lisbon'), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant={claimAction.variant}
+                                      onClick={claimAction.action}
+                                      className="gap-1"
+                                    >
+                                      <ActionIcon className="h-3.5 w-3.5" />
+                                      {claimAction.label}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-sm">
+                                      {getClaimTooltip(claim.status)}
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                     )}
                   </TableBody>
                 </Table>

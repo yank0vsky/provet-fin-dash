@@ -5,12 +5,28 @@ import { ARAgingSection } from "@/components/ARAgingSection";
 import { ClaimsPipelineSection } from "@/components/ClaimsPipelineSection";
 import { ClientDrawer } from "@/components/ClientDrawer";
 import { ChatDrawer } from "@/components/ChatDrawer";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 const Index = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [chatContext, setChatContext] = useState<{ type: 'dashboard' | 'revenue-trend' | 'ar-aging' | 'claims-pipeline'; title: string } | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  const handleTimestampUpdate = (timestamp: string) => {
+    setLastUpdated(timestamp);
+  };
+
+  const formatLastUpdated = (timestamp: string | null) => {
+    if (!timestamp) return null;
+    try {
+      return format(toZonedTime(new Date(timestamp), 'Europe/Lisbon'), 'MMM d, yyyy HH:mm');
+    } catch (error) {
+      return null;
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -21,6 +37,12 @@ const Index = () => {
             <p className="text-muted-foreground">
               Real-time insights into your clinic's financial performance
             </p>
+            {lastUpdated && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>Last updated: {formatLastUpdated(lastUpdated)}</span>
+              </div>
+            )}
           </div>
           <Button
             variant="outline"
@@ -32,7 +54,10 @@ const Index = () => {
           </Button>
         </div>
 
-        <TodaySummarySection onChatClick={() => setChatContext({ type: 'revenue-trend', title: "Today's Revenue Trend" })} />
+        <TodaySummarySection
+          onChatClick={() => setChatContext({ type: 'revenue-trend', title: "Today's Revenue Trend" })}
+          onTimestampUpdate={handleTimestampUpdate}
+        />
         <ARAgingSection 
           onClientClick={setSelectedClientId}
           onChatClick={() => setChatContext({ type: 'ar-aging', title: 'AR Aging' })}

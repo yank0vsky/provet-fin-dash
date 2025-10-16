@@ -17,9 +17,10 @@ import { useState } from "react";
 
 interface TodaySummarySectionProps {
   onChatClick?: () => void;
+  onTimestampUpdate?: (timestamp: string) => void;
 }
 
-export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
+export function TodaySummarySection({ onChatClick, onTimestampUpdate }: TodaySummarySectionProps) {
   const [dsoDialogOpen, setDsoDialogOpen] = useState(false);
   
   const { data, isLoading } = useQuery<TodaySummary>({
@@ -40,6 +41,11 @@ export function TodaySummarySection({ onChatClick }: TodaySummarySectionProps) {
         ))}
       </div>
     );
+  }
+
+  // Pass timestamp to parent component
+  if (onTimestampUpdate && data.asOf) {
+    onTimestampUpdate(data.asOf);
   }
 
 
