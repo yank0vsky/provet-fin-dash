@@ -48,27 +48,27 @@ export function ClaimsPipelineSection({ onChatClick }: ClaimsPipelineSectionProp
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h3 className="text-lg font-semibold">Reimbursement Pipeline</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           {onChatClick && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onChatClick}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <MessageSquare className="h-4 w-4" />
               Chat
             </Button>
           )}
-          <Button onClick={() => navigate('/claims')}>
+          <Button onClick={() => navigate('/claims')} className="w-full sm:w-auto">
             Open Full Tracker
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 mb-4 md:grid-cols-3">
+      <div className="grid gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="p-4 rounded-lg bg-muted/50">
           <p className="text-sm text-muted-foreground">Total Open</p>
           <p className="text-2xl font-bold">{formatMoney(data.kpis.totalOpenAmount)}</p>

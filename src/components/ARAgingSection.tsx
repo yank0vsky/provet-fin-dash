@@ -88,7 +88,7 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">AR Aging</h3>
         </div>
@@ -97,7 +97,7 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
             variant="ghost"
             size="sm"
             onClick={onChatClick}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             <MessageSquare className="h-4 w-4" />
             Chat
@@ -191,8 +191,8 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
       </div>
 
       {/* Action buttons below chart */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6 pt-4 border-t">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -245,7 +245,7 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
         </div>
 
         {selectedBucket && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground text-center sm:text-right">
             {data?.buckets.find(b => b.label === selectedBucket)?.amount.amount.toLocaleString()} € in selected bucket
           </div>
         )}

@@ -101,14 +101,14 @@ export function TodaySummarySection({ onChatClick, onTimestampUpdate }: TodaySum
       </div>
 
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <h3 className="text-lg font-semibold">Today's Revenue Trend</h3>
           {onChatClick && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onChatClick}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <MessageSquare className="h-4 w-4" />
               Chat
