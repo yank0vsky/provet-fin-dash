@@ -91,12 +91,6 @@ export function ARAgingSection({ onClientClick, onChatClick }: ARAgingSectionPro
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">AR Aging</h3>
-          {lastUpdated && (
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>Last updated: {formatLastUpdated(lastUpdated)}</span>
-            </div>
-          )}
         </div>
         {onChatClick && (
           <Button
